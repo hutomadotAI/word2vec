@@ -15,7 +15,7 @@ from svc_config import SvcConfig
 
 
 def _get_logger():
-    logger = logging.getLogger('svclass.server')
+    logger = logging.getLogger('word2vec.server')
     return logger
 
 
@@ -101,8 +101,8 @@ handlers:
     class: hu_logging.HuLogHandler
     level: INFO
     log_path: /tmp/hu_log
-    log_tag: WNET
-    es_log_index: ai-svclass-v1
+    log_tag: WORD2VEC
+    es_log_index: ai-word2vec-v1
     multi_process: False
 """
 
