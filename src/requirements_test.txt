@@ -1,12 +1,10 @@
-tqdm==4.19.7
-numpy==1.14.0
-pyyaml==3.12.0
-aiohttp==2.3.10
+-r requirements.txt
+
+-r requirements_code_style.txt
 
 # Add the local PYPI server
 --trusted-host dev-web.hutoma.com
 --extra-index-url http://dev-web.hutoma.com:8088
 
 # add dependencies
-hu_logging==0.3.24
-hu_utils==0.3.25
+hu_build==0.3.29
