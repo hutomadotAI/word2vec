@@ -72,14 +72,19 @@ async def handle_request_multiple_words(request):
     words = data['words']
     _get_logger().info("Request for {} words".format(len(words)))
     wordvec_dict = {}
-    for word in words:
-        vecs = Word2VecLoaded.get_w2v().get(word)
-        if vecs is not None:
-            wordvec_dict[word] = vecs
-        else:
-            wordvec_dict[word] = None
-    json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
-    return web.json_response(json_response)
+    try:
+        for word in words:
+            vecs = Word2VecLoaded.get_w2v().get(word)
+            if vecs is not None:
+                wordvec_dict[word] = vecs
+            else:
+                wordvec_dict[word] = None
+        json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
+        return web.json_response(json_response)
+    except:
+        _get_logger().exception("Error obtaining the vectors")
+        pass
+
 
 
 LOGGING_CONFIG_TEXT = """

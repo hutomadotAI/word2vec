@@ -50,14 +50,14 @@ class Word2Vec(object):
         count = 0
         tStart = time()
         word_vecs = {}
-        with open(self.path, "rb") as f:
+        with open(self.path, "r") as f:
             for line in tqdm(f, desc='loading glove embeddings'):
                 line = line.strip()
                 if not line:
                     continue
                 line = line.split(' ')
                 if vocab is None:
-                    emb = map(np.float32, line[1:])
+                    emb = list(map(np.float32, line[1:]))
                     word_vecs[line[0]] = np.array(emb)
                     count += 1
                 elif line[0] in vocab:
