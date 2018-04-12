@@ -86,6 +86,9 @@ async def handle_request_multiple_words(request):
         pass
 
 
+async def handle_request_health(request):
+    return web.Response(status=200)
+
 
 LOGGING_CONFIG_TEXT = """
 version: 1
@@ -127,6 +130,7 @@ def main():
     Word2VecLoaded.load(config.vectors_file)
     app = web.Application(loop=loop)
     app.router.add_post('/words', handle_request_multiple_words)
+    app.router.add_get('/health', handle_request_health)
     web.run_app(app, port=config.server_port)
 
 
