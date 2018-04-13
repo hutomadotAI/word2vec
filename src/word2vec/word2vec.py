@@ -4,6 +4,8 @@ from time import time
 import numpy as np
 from tqdm import tqdm
 import logging
+import pickle
+from pathlib import Path
 
 
 def _get_logger():
@@ -12,6 +14,9 @@ def _get_logger():
 
 
 class Word2Vec(object):
+
+    PICKLED_VECTORS_FILE_EXT = ".pkl"
+
     def __init__(self, path=None):
         self.__logger = _get_logger()
         self.path = path
@@ -40,11 +45,33 @@ class Word2Vec(object):
         """
         Reads word embeddings from disk.
         """
-        print("INFO: loading embeddings")
-        if self.use == "w2v":
-            return self._load_w2v_emb(vocab)
-        elif self.use == "glove":
-            return self._load_glove_emb(vocab)
+
+        # First try to load a pickle file, if it exists, in the same directory as
+        # the vectors file
+        local_path = Path(self.path)
+        pickled_vectors_file_path = local_path.with_suffix(self.PICKLED_VECTORS_FILE_EXT)
+        if pickled_vectors_file_path.exists():
+            self.logger.info("found pickled file for embeddings at {}".format(str(pickled_vectors_file_path)))
+            tStart = time()
+            with pickled_vectors_file_path.open('rb') as pkl_file:
+                embeddings = pickle.load(pkl_file)
+            self.logger.info("Finished loading embeddings from pickle: {} mins".format((time() - tStart) / 60.))
+        else:
+            print("loading embeddings")
+            if self.use == "w2v":
+                embeddings = self._load_w2v_emb(vocab)
+            elif self.use == "glove":
+                embeddings = self._load_glove_emb(vocab)
+
+            # Try to save the embeddings a a pickle to speedup next initialisation
+            try:
+                with pickled_vectors_file_path.open('wb') as pkl_file:
+                    self.logger.info("saving pickled file with vectors to {}".format(str(pickled_vectors_file)))
+                    pickle.dump(embeddings, pkl_file)
+            except IOError:
+                self.logger.exception("Could not save the pickled file, will keep on using the original one")
+
+        return embeddings
 
     def _load_glove_emb(self, vocab=None):
         count = 0
