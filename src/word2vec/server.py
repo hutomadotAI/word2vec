@@ -45,7 +45,7 @@ class Word2VecLoaded(object):
         time1 = time.time()
         Word2VecLoaded.__w2v = wv.load_w2v()
         Word2VecLoaded.__loading = False
-        Word2VecLoaded.__dim = len(Word2VecLoaded.__w2v.values()[-1])
+        Word2VecLoaded.__dim = len(list(Word2VecLoaded.__w2v.values())[-1])
         Word2VecLoaded.__mean = wv.get_mean_norm(Word2VecLoaded.__w2v)
         time2 = time.time()
         logger.info("Done loading vectors - took {}".format(time2 - time1))
