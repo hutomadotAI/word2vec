@@ -33,6 +33,8 @@ class JsonEncoder(json.JSONEncoder):
 
 class Word2VecLoaded(object):
     __w2v = None
+    __mean = None
+    __dim = None
     __loading = True
 
     @staticmethod
@@ -43,6 +45,8 @@ class Word2VecLoaded(object):
         time1 = time.time()
         Word2VecLoaded.__w2v = wv.load_w2v()
         Word2VecLoaded.__loading = False
+        Word2VecLoaded.__dim = len(list(Word2VecLoaded.__w2v.values())[-1])
+        Word2VecLoaded.__mean = wv.get_mean_norm(Word2VecLoaded.__w2v)
         time2 = time.time()
         logger.info("Done loading vectors - took {}".format(time2 - time1))
 
@@ -53,6 +57,15 @@ class Word2VecLoaded(object):
     @staticmethod
     def is_loading():
         return Word2VecLoaded.__loading
+
+    @staticmethod
+    def get_mean():
+        return Word2VecLoaded.__mean
+
+    @staticmethod
+    def get_dim():
+        return Word2VecLoaded.__dim
+
 
 
 """
@@ -66,6 +79,14 @@ Response: {"vectors":{"word1":[...], "word2":null}}
 
 
 async def handle_request_multiple_words(request):
+
+    def gen_random_mean_norm_vector():
+        dim = Word2VecLoaded.get_dim()
+        mean_norm = Word2VecLoaded.get_mean()
+        tmp = numpy.random.normal(size=dim).astype(numpy.float64)
+        tmp /= numpy.linalg.norm(tmp) / mean_norm
+        return tmp
+
     data = await request.json()
     if 'words' not in data:
         raise web.HTTPBadRequest()
@@ -78,7 +99,7 @@ async def handle_request_multiple_words(request):
             if vecs is not None:
                 wordvec_dict[word] = vecs
             else:
-                wordvec_dict[word] = None
+                wordvec_dict[word] = gen_random_mean_norm_vector()
         json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
         return web.json_response(json_response)
     except:

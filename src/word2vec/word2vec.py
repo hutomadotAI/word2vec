@@ -31,6 +31,10 @@ class Word2Vec(object):
         self.logger.info("New vocab: {}".format(len(vocab)))
         return vocab
 
+    def get_mean_norm(self, w2v):
+        mean_norm = np.mean(np.linalg.norm(np.array(list(w2v.values())), axis=1))
+        return mean_norm
+
     def load_w2v(self, docs=None):
         if docs is None:
             self.logger.info("Loading word2vec...")
@@ -66,7 +70,7 @@ class Word2Vec(object):
             # Try to save the embeddings a a pickle to speedup next initialisation
             try:
                 with pickled_vectors_file_path.open('wb') as pkl_file:
-                    self.logger.info("saving pickled file with vectors to {}".format(str(pickled_vectors_file)))
+                    self.logger.info("saving pickled file with vectors to {}".format(str(pickled_vectors_file_path)))
                     pickle.dump(embeddings, pkl_file)
             except IOError:
                 self.logger.exception("Could not save the pickled file, will keep on using the original one")
