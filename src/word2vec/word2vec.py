@@ -83,7 +83,7 @@ class Word2Vec(object):
         word_vecs = {}
         with open(self.path, "r") as f:
             for line in tqdm(f, desc='loading glove embeddings'):
-                line = line.strip()
+                line = line.rstrip()
                 if not line:
                     continue
                 line = line.split(' ')
