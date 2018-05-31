@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+  word2vec:
+    build:
+      context: .
+    volumes:
+      - ./word2vec:/src/word2vec
+      - ./datasets:/datasets
+    environment:
+    - W2V_SERVER_PORT=9090
+    - W2V_VECTOR_FILE=/datasets/glove.840B.300d.txt
