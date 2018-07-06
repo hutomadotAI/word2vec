@@ -95,6 +95,8 @@ async def handle_request_multiple_words(request):
     wordvec_dict = {}
     try:
         for word in words:
+            if word.replace(".", "", 1).isdigit():
+                word = 'NUM'
             vecs = Word2VecLoaded.get_w2v().get(word)
             if vecs is not None:
                 wordvec_dict[word] = vecs
