@@ -1,16 +1,24 @@
 # Base off of the Python image
-FROM python:3.5.5-slim
+FROM python:3.6.6-slim-stretch
 LABEL maintainer "Pedro Teixeira <pedrotei@hutoma.com>"
 
+RUN echo "2018-07-06" > /os_patch_date.txt
+
 RUN apt-get update \
+ && apt-get upgrade -y \
  && apt install -y --no-install-recommends \
   build-essential \
  && rm -rf /var/lib/apt/lists/*
 
- RUN pip install --no-cache-dir --upgrade pip
-# Copy common code
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+# Install pipenv
+ENV PIP_NO_CACHE_DIR=false
+RUN pip install --upgrade pip pipenv
+
+# Apply the pipenv
+RUN mkdir -p /src/word2vec
+COPY Pipfile* setup.py /src/
+WORKDIR /src
+RUN pipenv install --system
 
 # Copy the code
 COPY word2vec/ /src/word2vec/
@@ -27,7 +35,6 @@ USER appuser
 WORKDIR /home/appuser
 
 ENV W2V_SERVER_PORT 9090
-
 
 EXPOSE 9090
 
