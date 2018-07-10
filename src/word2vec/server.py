@@ -91,22 +91,21 @@ async def handle_request_multiple_words(request):
     if 'words' not in data:
         raise web.HTTPBadRequest()
     words = data['words']
-    _get_logger().info("Request for {} words".format(len(words)))
+    logger = _get_logger()
+    logger.info("Request for {} words".format(len(words)))
     wordvec_dict = {}
     try:
         for word in words:
-            # if word.replace(".", "", 1).isdigit():
-            #     word = 'NUM'
             vecs = Word2VecLoaded.get_w2v().get(word)
             if vecs is not None:
                 wordvec_dict[word] = vecs
             else:
-                _get_logger().info("unknown word {}".format(word))
+                logger.info("unknown word {}".format(word))
                 wordvec_dict[word] = gen_random_mean_norm_vector()
         json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
         return web.json_response(json_response)
-    except:
-        _get_logger().exception("Error obtaining the vectors")
+    except Exception:
+        logger.exception("Error obtaining the vectors")
         pass
 
 
