@@ -67,7 +67,6 @@ class Word2VecLoaded(object):
         return Word2VecLoaded.__dim
 
 
-
 """
 This endpoint handles a request that takes a JSON array of words, and returns
 a dictionary containing the vectorization of those words.
@@ -103,7 +102,7 @@ async def handle_request_multiple_words(request):
                 logger.info("unknown word {}".format(word))
                 wordvec_dict[word] = gen_random_mean_norm_vector()
         json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
-        return web.json_response(json_response)
+        return web.json_response(body=json_response)
     except Exception:
         logger.exception("Error obtaining the vectors")
         pass
