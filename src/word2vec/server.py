@@ -10,8 +10,8 @@ import logging.config
 import asyncio
 import time
 
-from word2vec import Word2Vec
-from svc_config import SvcConfig
+from word2vec.word2vec import Word2Vec
+from word2vec.svc_config import SvcConfig
 
 
 def _get_logger():
@@ -31,85 +31,62 @@ class JsonEncoder(json.JSONEncoder):
             return super(JsonEncoder, self).default(obj)
 
 
-class Word2VecLoaded(object):
-    __w2v = None
-    __mean = None
-    __dim = None
-    __loading = True
+class Word2VecServer:
+    def __init__(self):
+        self.__w2v = None
+        self.__mean = None
+        self.__dim = None
+        self.__loading = True
+        self.logger = _get_logger()
 
-    @staticmethod
-    def load(path):
+    def load(self, path):
         wv = Word2Vec(path=path)
-        logger = _get_logger()
-        logger.info("Loading vectors...")
+        self.logger.info("Loading vectors...")
         time1 = time.time()
-        Word2VecLoaded.__w2v = wv.load_w2v()
-        Word2VecLoaded.__loading = False
-        Word2VecLoaded.__dim = len(list(Word2VecLoaded.__w2v.values())[-1])
-        Word2VecLoaded.__mean = wv.get_mean_norm(Word2VecLoaded.__w2v)
+        self.__w2v = wv.load_w2v()
+        self.__loading = False
+        self.__dim = len(list(self.__w2v.values())[-1])
+        self.__mean = wv.get_mean_norm(self.__w2v)
         time2 = time.time()
-        logger.info("Done loading vectors - took {}".format(time2 - time1))
+        self.logger.info("Done loading vectors - took {}".format(time2 - time1))
 
-    @staticmethod
-    def get_w2v():
-        return Word2VecLoaded.__w2v
-
-    @staticmethod
-    def is_loading():
-        return Word2VecLoaded.__loading
-
-    @staticmethod
-    def get_mean():
-        return Word2VecLoaded.__mean
-
-    @staticmethod
-    def get_dim():
-        return Word2VecLoaded.__dim
-
-
-"""
-This endpoint handles a request that takes a JSON array of words, and returns
-a dictionary containing the vectorization of those words.
-Example:
-Request: {"words" : ["word1", "word2"]}
-Assuming we have the vectorisation for word1 but not for word2
-Response: {"vectors":{"word1":[...], "word2":null}}
-"""
-
-
-async def handle_request_multiple_words(request):
-
-    def gen_random_mean_norm_vector():
-        dim = Word2VecLoaded.get_dim()
-        mean_norm = Word2VecLoaded.get_mean()
-        tmp = numpy.random.normal(size=dim).astype(numpy.float64)
-        tmp /= numpy.linalg.norm(tmp) / mean_norm
+    def gen_random_mean_norm_vector(self):
+        tmp = numpy.random.normal(size=self.__dim).astype(numpy.float64)
+        tmp /= numpy.linalg.norm(tmp) / self.__mean
         return tmp
 
-    data = await request.json()
-    if 'words' not in data:
-        raise web.HTTPBadRequest()
-    words = data['words']
-    logger = _get_logger()
-    logger.info("Request for {} words".format(len(words)))
-    wordvec_dict = {}
-    try:
-        for word in words:
-            vecs = Word2VecLoaded.get_w2v().get(word)
-            if vecs is not None:
-                wordvec_dict[word] = vecs
-            else:
-                logger.info("unknown word {}".format(word))
-                wordvec_dict[word] = gen_random_mean_norm_vector()
-        json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
-        return web.json_response(body=json_response)
-    except Exception:
-        logger.exception("Error obtaining the vectors")
-        pass
+    async def handle_request_multiple_words(self, request):
+        """
+        This endpoint handles a request that takes a JSON array of words, and returns
+        a dictionary containing the vectorization of those words.
+        Example:
+        Request: {"words" : ["word1", "word2"]}
+        Assuming we have the vectorisation for word1 but not for word2
+        Response: {"vectors":{"word1":[...], "word2":null}}
+        """
 
+        data = await request.json()
+        if 'words' not in data:
+            raise web.HTTPBadRequest()
+        words = data['words']
+        self.logger.info("Request for {} words".format(len(words)))
+        wordvec_dict = {}
+        try:
+            for word in words:
+                vecs = self.__w2v.get(word)
+                if vecs is not None:
+                    wordvec_dict[word] = vecs
+                else:
+                    self.logger.info("unknown word {}".format(word))
+                    wordvec_dict[word] = self.gen_random_mean_norm_vector()
+            json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
+            return web.json_response(body=json_response)
+        except Exception:
+            self.logger.exception("Error obtaining the vectors")
+            raise
 
-async def handle_request_health(request):
-    return web.Response(status=200)
+    async def handle_request_health(self, request):
+        return web.Response(status=200)
 
 
 LOGGING_CONFIG_TEXT = """
@@ -137,6 +114,11 @@ handlers:
 """
 
 
+def initialize_web_app(app, w2v_server):
+    app.router.add_post('/words', w2v_server.handle_request_multiple_words)
+    app.router.add_get('/health', w2v_server.handle_request_health)
+
+
 def main():
     """Main function"""
     logging_config = yaml.load(LOGGING_CONFIG_TEXT)
@@ -149,10 +131,11 @@ def main():
 
     loop = asyncio.get_event_loop()
     config = SvcConfig.get_instance()
-    Word2VecLoaded.load(config.vectors_file)
+    server = Word2VecServer()
+    server.load(config.vectors_file)
+
     app = web.Application(loop=loop)
-    app.router.add_post('/words', handle_request_multiple_words)
-    app.router.add_get('/health', handle_request_health)
+    initialize_web_app(app, server)
     web.run_app(app, port=config.server_port)
 
 

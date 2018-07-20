@@ -32,7 +32,8 @@ class Word2Vec(object):
         return vocab
 
     def get_mean_norm(self, w2v):
-        mean_norm = np.mean(np.linalg.norm(np.array(list(w2v.values())), axis=1))
+        mean_norm = np.mean(
+            np.linalg.norm(np.array(list(w2v.values())), axis=1))
         return mean_norm
 
     def load_w2v(self, docs=None):
@@ -53,13 +54,17 @@ class Word2Vec(object):
         # First try to load a pickle file, if it exists, in the same directory as
         # the vectors file
         local_path = Path(self.path)
-        pickled_vectors_file_path = local_path.with_suffix(self.PICKLED_VECTORS_FILE_EXT)
+        pickled_vectors_file_path = local_path.with_suffix(
+            self.PICKLED_VECTORS_FILE_EXT)
         if pickled_vectors_file_path.exists():
-            self.logger.info("found pickled file for embeddings at {}".format(str(pickled_vectors_file_path)))
+            self.logger.info("found pickled file for embeddings at {}".format(
+                str(pickled_vectors_file_path)))
             tStart = time()
             with pickled_vectors_file_path.open('rb') as pkl_file:
                 embeddings = pickle.load(pkl_file)
-            self.logger.info("Finished loading embeddings from pickle: {} mins".format((time() - tStart) / 60.))
+            self.logger.info(
+                "Finished loading embeddings from pickle: {} mins".format(
+                    (time() - tStart) / 60.))
         else:
             print("loading embeddings")
             if self.use == "w2v":
@@ -70,10 +75,14 @@ class Word2Vec(object):
             # Try to save the embeddings a a pickle to speedup next initialisation
             try:
                 with pickled_vectors_file_path.open('wb') as pkl_file:
-                    self.logger.info("saving pickled file with vectors to {}".format(str(pickled_vectors_file_path)))
+                    self.logger.info(
+                        "saving pickled file with vectors to {}".format(
+                            str(pickled_vectors_file_path)))
                     pickle.dump(embeddings, pkl_file)
             except IOError:
-                self.logger.exception("Could not save the pickled file, will keep on using the original one")
+                self.logger.exception(
+                    "Could not save the pickled file, will keep on using the original one"
+                )
 
         return embeddings
 

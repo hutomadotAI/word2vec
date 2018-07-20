@@ -24,6 +24,7 @@ pytest = {version="*", index="pypi"}
 pytest-aiohttp = {version="*", index="pypi"}
 pytest-cov = {version="*", index="pypi"}
 pytest-timeout = {version="*", index="pypi"}
+pytest-mock = {version="*", index="pypi"}
 flake8 = {version="*", index="pypi"}
 yapf = {version="*", index="pypi"}
 hu_build = {version="*", index="hu_pypi"}
