@@ -10,7 +10,7 @@ import logging.config
 import asyncio
 import time
 
-from word2vec.word2vec import Word2Vec
+from word2vec.w2v import Word2Vec
 from word2vec.svc_config import SvcConfig
 
 
