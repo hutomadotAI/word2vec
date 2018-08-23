@@ -10,12 +10,12 @@ import logging.config
 import asyncio
 import time
 
-from word2vec.w2v import Word2Vec
-from word2vec.svc_config import SvcConfig
+from hu_w2v.w2v import Word2Vec
+from hu_w2v.svc_config import SvcConfig
 
 
 def _get_logger():
-    logger = logging.getLogger('word2vec.server')
+    logger = logging.getLogger('hu_w2v.server')
     return logger
 
 
@@ -78,7 +78,7 @@ class Word2VecServer:
                     wordvec_dict[word] = vecs
                 else:
                     self.logger.info("unknown word {}".format(word))
-                    wordvec_dict[word] = self.gen_random_mean_norm_vector()
+                    # wordvec_dict[word] = self.gen_random_mean_norm_vector()
             json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
             return web.json_response(body=json_response)
         except Exception:
@@ -87,6 +87,20 @@ class Word2VecServer:
 
     async def handle_request_health(self, request):
         return web.Response(status=200)
+
+    async def handle_request_unknown_words(self, request):
+        data = await request.json()
+        if 'words' not in data:
+            raise web.HTTPBadRequest()
+        words = data['words']
+        self.logger.info("checking for unknown words from {} words".format(len(words)))
+        try:
+            unk_words = [w for w in words if w not in self.__w2v.keys()]
+            json_response = json.dumps({'unk_words': unk_words}, cls=JsonEncoder)
+            return web.json_response(body=json_response)
+        except Exception:
+            self.logger.exception("Error obtaining unknown words")
+            raise
 
 
 LOGGING_CONFIG_TEXT = """
@@ -117,6 +131,7 @@ handlers:
 def initialize_web_app(app, w2v_server):
     app.router.add_post('/words', w2v_server.handle_request_multiple_words)
     app.router.add_get('/health', w2v_server.handle_request_health)
+    app.router.add_post('/unk_words', w2v_server.handle_request_unknown_words)
 
 
 def main():

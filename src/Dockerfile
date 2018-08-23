@@ -15,13 +15,13 @@ ENV PIP_NO_CACHE_DIR=false
 RUN pip install --upgrade pip pipenv
 
 # Apply the pipenv
-RUN mkdir -p /src/word2vec
+RUN mkdir -p /src/hu_w2v
 COPY Pipfile* setup.py /src/
 WORKDIR /src
 RUN pipenv install --system
 
 # Copy the code
-COPY word2vec/ /src/word2vec/
+COPY hu_w2v/ /src/hu_w2v/
 
 #---------------------------
 # switch to non root user
@@ -35,7 +35,8 @@ USER appuser
 WORKDIR /home/appuser
 
 ENV W2V_SERVER_PORT 9090
+ENV PYTHONPATH "${PYTHONPATH}:/src/hu_w2v/"
 
 EXPOSE 9090
 
-CMD ["python3", "/src/word2vec/server.py"]
+CMD ["python3", "/src/hu_w2v/server.py"]
