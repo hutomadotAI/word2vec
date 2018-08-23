@@ -10,8 +10,8 @@ import logging.config
 import asyncio
 import time
 
-from hu_w2v.w2v import Word2Vec
-from hu_w2v.svc_config import SvcConfig
+from word2vec.w2v import Word2Vec
+from word2vec.svc_config import SvcConfig
 
 
 def _get_logger():

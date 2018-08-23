@@ -6,7 +6,7 @@ services:
     build:
       context: .
     volumes:
-      - ./hu_w2v:/src/hu_w2v
+      - ./word2vec:/src/word2vec
       - ./datasets:/datasets
       - ./tests:/tests
     environment:
