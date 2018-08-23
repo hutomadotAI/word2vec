@@ -15,7 +15,7 @@ from word2vec.svc_config import SvcConfig
 
 
 def _get_logger():
-    logger = logging.getLogger('hu_w2v.server')
+    logger = logging.getLogger('word2vec.server')
     return logger
 
 
