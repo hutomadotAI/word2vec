@@ -70,20 +70,37 @@ async def test_unknown_test_word(cli, mocker, w2v_server):
     assert resp.status == 200
 
     # check a random vector was generated
-    assert w2v_server.gen_random_mean_norm_vector.call_count == 1
+    assert w2v_server.gen_random_mean_norm_vector.call_count == 0
 
     # check response
     json_data = await resp.json()
     vectors = json_data["vectors"]
 
     # check the test word was found and that we have a list of numbers
-    vectors_word1 = vectors[TEST_WORD]
-    check_vector_numeric(vectors_word1)
+    assert len(vectors) == 0
+
+
+async def test_unknown_test_word_2(cli, mocker, w2v_server):
+    TEST_WORD = "frobble"
+    resp = await cli.post('/unk_words', json={"words": [TEST_WORD]})
+    assert resp.status == 200
+
+    # check response
+    json_data = await resp.json()
+    unk_words = json_data["unk_words"]
+    assert len(unk_words) == 1
 
 
 async def test_multiple_test_words(cli):
-    TEST_WORDS = ["a", "b", "c"]
-    resp = await cli.post('/words', json={"words": TEST_WORDS})
+    TEST_WORDS = ["MetroCard", "RockBand", "what"]
+    resp = await cli.post('/unk_words', json={"words": TEST_WORDS})
+    assert resp.status == 200
+
+    json_data = await resp.json()
+    unk_words = json_data["unk_words"]
+    assert len(unk_words) == 1
+
+    resp = await cli.post('/words', json={"words": TEST_WORDS[:2]})
     assert resp.status == 200
 
     # check response
@@ -91,6 +108,6 @@ async def test_multiple_test_words(cli):
     vectors = json_data["vectors"]
 
     # check the test words were found and that they have a list of numbers
-    for test_word in TEST_WORDS:
+    for test_word in TEST_WORDS[:2]:
         vector = vectors[test_word]
         check_vector_numeric(vector)
