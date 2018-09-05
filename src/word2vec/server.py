@@ -78,7 +78,6 @@ class Word2VecServer:
                     wordvec_dict[word] = vecs
                 else:
                     self.logger.info("unknown word {}".format(word))
-                    # wordvec_dict[word] = self.gen_random_mean_norm_vector()
             json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
             return web.json_response(body=json_response)
         except Exception:
