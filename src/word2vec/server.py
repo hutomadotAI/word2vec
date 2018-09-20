@@ -51,6 +51,8 @@ class Word2VecServer:
             path = self.config.vectors_file_pt
         elif language == 'it':
             path = self.config.vectors_file_it
+        elif language == 'nl':
+            path = self.config.vectors_file_nl
         else:
             NotImplementedError("language not yet implemented")
         wv = Word2Vec(path=path)
