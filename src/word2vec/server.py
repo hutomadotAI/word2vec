@@ -32,14 +32,27 @@ class JsonEncoder(json.JSONEncoder):
 
 
 class Word2VecServer:
-    def __init__(self):
+    def __init__(self, config):
         self.__w2v = None
         self.__mean = None
         self.__dim = None
         self.__loading = True
         self.logger = _get_logger()
+        self.config = config
 
-    def load(self, path):
+    def load(self, language='en'):
+        if language == 'en':
+            path = self.config.vectors_file_en
+        elif language == 'es':
+            path = self.config.vectors_file_es
+        elif language == 'fr':
+            path = self.config.vectors_file_fr
+        elif language == 'pt':
+            path = self.config.vectors_file_pt
+        elif language == 'it':
+            path = self.config.vectors_file_it
+        else:
+            NotImplementedError("language not yet implemented")
         wv = Word2Vec(path=path)
         self.logger.info("Loading vectors...")
         time1 = time.time()
@@ -54,6 +67,15 @@ class Word2VecServer:
         tmp = numpy.random.normal(size=self.__dim).astype(numpy.float64)
         tmp /= numpy.linalg.norm(tmp) / self.__mean
         return tmp
+
+    async def reload(self, request):
+        """
+        this endpoint reloads a language model
+        """
+        data = await request.json()
+        lang = data['language']
+        self.load(language=lang)
+        return web.Response(status=200)
 
     async def handle_request_multiple_words(self, request):
         """
@@ -131,6 +153,7 @@ def initialize_web_app(app, w2v_server):
     app.router.add_post('/words', w2v_server.handle_request_multiple_words)
     app.router.add_get('/health', w2v_server.handle_request_health)
     app.router.add_post('/unk_words', w2v_server.handle_request_unknown_words)
+    app.router.add_post('/reload', w2v_server.reload)
 
 
 def main():
@@ -145,8 +168,8 @@ def main():
 
     loop = asyncio.get_event_loop()
     config = SvcConfig.get_instance()
-    server = Word2VecServer()
-    server.load(config.vectors_file)
+    server = Word2VecServer(config)
+    server.load(config.vectors_file_en)
 
     app = web.Application(loop=loop)
     initialize_web_app(app, server)

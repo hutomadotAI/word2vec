@@ -12,4 +12,8 @@ services:
     environment:
     - W2V_SERVER_PORT=9090
     # - W2V_VECTOR_FILE=/datasets/glove.840B.300d.txt
-    - W2V_VECTOR_FILE=/tests/data_test_embedding.txt
+    - W2V_VECTOR_FILE_EN=/tests/data_test_embedding.txt
+    - W2V_VECTOR_FILE_ES=/datasets/wiki.es.vec
+    - W2V_VECTOR_FILE_IT=/datasets/wiki.it.vec
+    - W2V_VECTOR_FILE_FR=/datasets/wiki.fr.vec
+    - W2V_VECTOR_FILE_PT=/datasets/wiki.pt.vec
