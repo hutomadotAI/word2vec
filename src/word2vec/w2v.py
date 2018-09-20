@@ -20,7 +20,12 @@ class Word2Vec(object):
     def __init__(self, path=None):
         self.__logger = _get_logger()
         self.path = path
-        self.use = 'glove' if 'glove' in self.path else 'w2v'
+        if 'glove' in self.path:
+            self.use = 'glove'
+        elif 'GoogleNews' in self.path:
+            self.use = 'w2v'
+        elif 'wiki' in self.path:
+            self.use = 'fasttext'
 
     @property
     def logger(self):
@@ -71,6 +76,8 @@ class Word2Vec(object):
                 embeddings = self._load_w2v_emb(vocab)
             elif self.use == "glove":
                 embeddings = self._load_glove_emb(vocab)
+            elif self.use == 'fasttext':
+                embeddings = self._load_fasttext_emb(vocab)
 
             # Try to save the embeddings a a pickle to speedup next initialisation
             try:
@@ -144,4 +151,30 @@ class Word2Vec(object):
             (time() - tStart) / 60.))
         if vocab is not None:
             self.logger.info("Words not found: {}".format(len(vocab) - count))
+        return word_vecs
+
+    def _load_fasttext_emb(self, vocab=None):
+        count = 0
+        tStart = time()
+        word_vecs = {}
+        with open(self.path, "r") as f:
+            header = f.readline()
+            vocab_size, layer1_size = map(int, header.split())
+            for line in tqdm(f, desc='loading fasttext embeddings', total=vocab_size):
+                line = line.strip()
+                if not line:
+                    continue
+                line = line.split(' ')
+                if vocab is None:
+                    emb = list(map(np.float32, line[1:]))
+                    word_vecs[line[0]] = np.array(emb)
+                    count += 1
+                elif line[0] in vocab:
+                    emb = list(map(np.float32, line[1:]))
+                    word_vecs[line[0]] = np.array(emb)
+                    count += 1
+
+        self.logger.info("finished loading embeddings: {} mins".format((time() - tStart) / 60.))
+        if vocab is not None:
+            self.logger.info("words not found: {}".format(len(vocab) - count))
         return word_vecs
