@@ -85,7 +85,9 @@ class Word2Vec(object):
                     self.logger.info(
                         "saving pickled file with vectors to {}".format(
                             str(pickled_vectors_file_path)))
+                    print("saving pkl")
                     pickle.dump(embeddings, pkl_file)
+                    print("file saved")
             except IOError:
                 self.logger.exception(
                     "Could not save the pickled file, will keep on using the original one"
@@ -97,7 +99,7 @@ class Word2Vec(object):
         count = 0
         tStart = time()
         word_vecs = {}
-        with open(self.path, "r") as f:
+        with open(self.path, "r", encoding='utf-8') as f:
             for line in tqdm(f, desc='loading glove embeddings'):
                 line = line.rstrip()
                 if not line:
@@ -157,7 +159,7 @@ class Word2Vec(object):
         count = 0
         tStart = time()
         word_vecs = {}
-        with open(self.path, "r") as f:
+        with open(self.path, "r", encoding='utf-8') as f:
             header = f.readline()
             vocab_size, layer1_size = map(int, header.split())
             for line in tqdm(f, desc='loading fasttext embeddings', total=vocab_size):
