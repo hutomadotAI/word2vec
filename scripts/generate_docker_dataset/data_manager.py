@@ -1,6 +1,7 @@
 import argparse
 import os
 import tqdm
+import time
 from pathlib import Path
 import google.auth.transport.requests as g_requests
 from google.cloud import storage
@@ -47,7 +48,6 @@ def main(args):
 
         url = ("https://www.googleapis.com/upload/storage/v1/b/{bucket}" +
                "/o?uploadType=resumable").format(bucket=bucket_name)
-        print(url)
         bytes_in_1MB = 1024 * 1024
         chunk_size = bytes_in_1MB  # 1MB
         upload = ResumableUpload(url, chunk_size)
@@ -61,14 +61,28 @@ def main(args):
                                        content_type)
             if response.status_code != 200:
                 raise DataError("Failed to initiate upload")
-            progress_bar = tqdm.tqdm(
-                unit="B", total=upload.total_bytes,
-                unit_scale=True)
-            while not upload.finished:
-                response = upload.transmit_next_chunk(transport)
-                if response.status_code != 308:
-                    raise DataError("Failed to complete upload")
-                progress_bar.update(chunk_size)
+
+            consecutive_errors = 0
+            bytes_uploaded = 0
+            with tqdm.tqdm(
+                    unit="B",
+                    total=upload.total_bytes,
+                    unit_scale=True,
+                    unit_divisor=1024) as progress_bar:
+                while not upload.finished:
+                    response = upload.transmit_next_chunk(transport)
+                    if response.status_code == 308 or response.status_code == 200:
+                        consecutive_errors = 0
+                        progress_bar.update(upload.bytes_uploaded -
+                                            bytes_uploaded)
+                        bytes_uploaded = upload.bytes_uploaded
+                    else:
+                        consecutive_errors += 1
+                        sleep_time = consecutive_errors * 5
+                        print("Failure code {}, waiting {}s".format(response.status_code))
+                        time.sleep(sleep_time)
+                        if consecutive_errors > 10:
+                            raise DataError("Failed to complete upload")
 
 
 if __name__ == "__main__":
