@@ -1,7 +1,6 @@
 import argparse
 import os
 from pathlib import Path
-from google.cloud import storage
 import hu_build.build_docker
 
 DOCKER_TEMPLATE = """
@@ -17,15 +16,8 @@ SCRIPT_PATH = Path(os.path.dirname(os.path.realpath(__file__)))
 
 
 def main(args):
-    file_name = args.gcs_file_name
+    file_name = args.input_file
     out_path = SCRIPT_PATH / "out"
-    local_file = out_path / file_name
-    client = storage.Client()
-    bucket = client.get_bucket("hutoma-datasets")
-    print("Downloading from GCS to out/{}".format(file_name))
-
-    blob = bucket.blob("word2vec_service/v2/{}".format(file_name))
-    blob.download_to_filename(str(local_file))
 
     docker_line = "COPY {} /data/word2vec.v2.data.pkl".format(file_name, file_name)
     docker_file_content = DOCKER_TEMPLATE.format(to_be_replaced=docker_line)
@@ -44,8 +36,7 @@ def main(args):
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser(
         description='Build dockerised image for an image')
-    PARSER.add_argument('word2vec_variant', help='Variant name of word2vec, usually the ')
-    PARSER.add_argument('gcs_file_name', help='File to wrap in container')
+    PARSER.add_argument('input_file', help='Input name of word2vec data PKL file')
     PARSER.add_argument('--docker-tag', help='Docker tag', default='1.0')
     PARSER.add_argument(
         '--docker-push', help='Push docker images to GCR', action="store_true")

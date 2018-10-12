@@ -11,9 +11,12 @@ name = "hu_pypi"
 [packages]
 flake8 = {version="*", index="pypi"}
 yapf = {version="*", index="pypi"}
+tqdm = {version="*", index="pypi"}
+numpy = {version="*", index="pypi"}
 
 [dev-packages]
 google-cloud-storage = {version="*", index="pypi"}
+google-resumable-media = {version="*", index="pypi"}
 hu_build = {version="*", index="hu_pypi"}
 
 [requires]
