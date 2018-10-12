@@ -8,7 +8,7 @@ DOCKER_TEMPLATE = """
 FROM busybox
 LABEL maintainer "Paul Annetts <paul@hutoma.ai>"
 
-{to_be_replaced}
+COPY word2vec.v2.data.pkl /data/word2vec.v2.data.pkl
 
 CMD exec /bin/sh -c "trap : TERM INT; (while true; do sleep 1000; done) & wait"
 """
@@ -21,11 +21,9 @@ def main(args):
     out_path = SCRIPT_PATH / "out"
     out_path.mkdir(exist_ok=True)
     print("Copying file {} to out/ directory".format(file_path))
-    shutil.copy2(file_path, out_path)
-    docker_line = "COPY {} /data/word2vec.v2.data.pkl".format(file_path.name)
-    docker_file_content = DOCKER_TEMPLATE.format(to_be_replaced=docker_line)
+    shutil.copy2(file_path, out_path / "word2vec.v2.data.pkl")
     dockerfile = out_path / "Dockerfile"
-    dockerfile.write_text(docker_file_content, encoding="utf8")
+    dockerfile.write_text(DOCKER_TEMPLATE, encoding="utf8")
     image_name = 'word2vec_data_{}'.format(args.word2vec_variant)
     docker_image = hu_build.build_docker.DockerImage(
         out_path,
