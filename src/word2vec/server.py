@@ -7,7 +7,6 @@ import numpy
 import yaml
 import logging
 import logging.config
-import asyncio
 import time
 
 from word2vec.w2v import Word2Vec
