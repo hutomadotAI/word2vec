@@ -8,7 +8,7 @@ import yaml
 import logging
 import logging.config
 import time
-
+from asyncio_utils.aiohttp_wrapped_caller import ExceptionWrappedCaller
 from word2vec.w2v import Word2Vec
 from word2vec.svc_config import SvcConfig
 
@@ -127,9 +127,9 @@ handlers:
 
 
 def initialize_web_app(app, w2v_server):
-    app.router.add_post('/words', w2v_server.handle_request_multiple_words)
-    app.router.add_get('/health', w2v_server.handle_request_health)
-    app.router.add_post('/unk_words', w2v_server.handle_request_unknown_words)
+    app.router.add_post('/words', ExceptionWrappedCaller(w2v_server.handle_request_multiple_words))
+    app.router.add_get('/health', ExceptionWrappedCaller(w2v_server.handle_request_health))
+    app.router.add_post('/unk_words', ExceptionWrappedCaller(w2v_server.handle_request_unknown_words))
 
 
 def main():
