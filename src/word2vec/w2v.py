@@ -54,10 +54,7 @@ class Word2Vec(object):
                 "Finished loading embeddings from pickle: {} mins".format(
                     (time() - tStart) / 60.))
         else:
-            raise Word2VecError("Couldn't find required .pkl file at {}".format(pickled_vectors_file_path))
+            raise Word2VecError("Couldn't find required .pkl file at {}".
+                                format(pickled_vectors_file_path))
 
         return embeddings
-
-
-
-

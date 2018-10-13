@@ -43,7 +43,7 @@ class Word2VecServer:
         wv = Word2Vec(path=path)
         self.logger.info("Loading vectors...")
         time1 = time.time()
-        self.__w2v = wv.load_w2v()
+        self.__w2v = wv.load_embeddings()
         self.__loading = False
         self.__dim = len(list(self.__w2v.values())[-1])
         self.__mean = wv.get_mean_norm(self.__w2v)
@@ -143,12 +143,11 @@ def main():
         logging_config['handlers']['elastic']['log_tag'] = log_tag
     logging.config.dictConfig(logging_config)
 
-    loop = asyncio.get_event_loop()
     config = SvcConfig.get_instance()
     server = Word2VecServer()
     server.load(config.vectors_file)
 
-    app = web.Application(loop=loop)
+    app = web.Application()
     initialize_web_app(app, server)
     web.run_app(app, port=config.server_port)
 

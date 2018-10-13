@@ -20,12 +20,12 @@ def w2v_server():
 
 
 @pytest.fixture()
-def cli(loop, test_client, w2v_server):
+def cli(loop, aiohttp_client, w2v_server):
     """Defines the CLI test HTTP client which will start a test HTTP server.
     Will reuse the module level ner_server pytest fixture which is the slow bit to initialize"""
-    web_app = web.Application(loop=loop)
+    web_app = web.Application()
     word2vec.server.initialize_web_app(web_app, w2v_server)
-    return loop.run_until_complete(test_client(web_app))
+    return loop.run_until_complete(aiohttp_client(web_app))
 
 
 async def test_server_root_404(cli):
