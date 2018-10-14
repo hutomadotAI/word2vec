@@ -3,6 +3,7 @@ import os
 from time import time
 from tqdm import tqdm
 import pickle
+import itertools
 
 import numpy as np
 from pathlib import Path
@@ -112,10 +113,19 @@ def main(args):
         embeddings = load_fasttext_emb(input_path)
 
     pickled_vectors_file_path = input_path.with_suffix(".pkl")
+    print("Saving pickled file with vectors to {}".format(
+        str(pickled_vectors_file_path)))
     with pickled_vectors_file_path.open('wb') as pkl_file:
-        print("saving pickled file with vectors to {}".format(
-            str(pickled_vectors_file_path)))
         pickle.dump(embeddings, pkl_file)
+
+    print("Calculating test file")
+    emb_slice = itertools.islice(embeddings.items(), 0, None, 1000)
+    embeddings_test = {k[0]: k[1] for k in emb_slice}
+    test_file_path = input_path.parent / "{}-test.pkl".format(input_path.stem) 
+    print("Saving test file with vectors to {}".format(
+        str(test_file_path)))
+    with test_file_path.open('wb') as pkl_file:
+        pickle.dump(embeddings_test, pkl_file)
 
 
 if __name__ == "__main__":
