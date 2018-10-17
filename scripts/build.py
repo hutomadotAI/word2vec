@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 import hu_build.build_docker
+import hu_build.build_package
 from hu_build.build_docker import DockerImage
 
 SCRIPT_PATH = Path(os.path.dirname(os.path.realpath(__file__)))
@@ -15,8 +16,7 @@ def main(build_args):
     """Main function"""
     src_path = ROOT_DIR / 'src'
     if not build_args.no_test:
-        # TODO: add unit tests
-        pass
+        hu_build.build_package.package_test('word2vec', src_path)
     if build_args.docker_build:
         tag_version = build_args.version
         docker_image = DockerImage(

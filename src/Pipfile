@@ -9,7 +9,6 @@ verify_ssl = false
 name = "hu_pypi"
 
 [packages]
-tqdm= {version="*", index="pypi"}
 numpy = {version="*", index="pypi"}
 pyyaml = {version="*", index="pypi"}
 aiohttp = {version="*", index="pypi"}

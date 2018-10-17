@@ -7,9 +7,8 @@ import numpy
 import yaml
 import logging
 import logging.config
-import asyncio
 import time
-
+from asyncio_utils.aiohttp_wrapped_caller import ExceptionWrappedCaller
 from word2vec.w2v import Word2Vec
 from word2vec.svc_config import SvcConfig
 
@@ -43,12 +42,13 @@ class Word2VecServer:
         wv = Word2Vec(path=path)
         self.logger.info("Loading vectors...")
         time1 = time.time()
-        self.__w2v = wv.load_w2v()
+        self.__w2v = wv.load_embeddings()
         self.__loading = False
         self.__dim = len(list(self.__w2v.values())[-1])
         self.__mean = wv.get_mean_norm(self.__w2v)
         time2 = time.time()
-        self.logger.info("Done loading vectors - took {}".format(time2 - time1))
+        self.logger.info(
+            "Done loading vectors - took {}".format(time2 - time1))
 
     def gen_random_mean_norm_vector(self):
         tmp = numpy.random.normal(size=self.__dim).astype(numpy.float64)
@@ -78,7 +78,10 @@ class Word2VecServer:
                     wordvec_dict[word] = vecs
                 else:
                     self.logger.info("unknown word {}".format(word))
-            json_response = json.dumps({'vectors': wordvec_dict}, cls=JsonEncoder)
+            json_response = json.dumps({
+                'vectors': wordvec_dict
+            },
+                                       cls=JsonEncoder)
             return web.json_response(body=json_response)
         except Exception:
             self.logger.exception("Error obtaining the vectors")
@@ -92,10 +95,14 @@ class Word2VecServer:
         if 'words' not in data:
             raise web.HTTPBadRequest()
         words = data['words']
-        self.logger.info("checking for unknown words from {} words".format(len(words)))
+        self.logger.info("checking for unknown words from {} words".format(
+            len(words)))
         try:
             unk_words = [w for w in words if w not in self.__w2v.keys()]
-            json_response = json.dumps({'unk_words': unk_words}, cls=JsonEncoder)
+            json_response = json.dumps({
+                'unk_words': unk_words
+            },
+                                       cls=JsonEncoder)
             return web.json_response(body=json_response)
         except Exception:
             self.logger.exception("Error obtaining unknown words")
@@ -128,9 +135,14 @@ handlers:
 
 
 def initialize_web_app(app, w2v_server):
-    app.router.add_post('/words', w2v_server.handle_request_multiple_words)
-    app.router.add_get('/health', w2v_server.handle_request_health)
-    app.router.add_post('/unk_words', w2v_server.handle_request_unknown_words)
+    app.router.add_post(
+        '/words',
+        ExceptionWrappedCaller(w2v_server.handle_request_multiple_words))
+    app.router.add_get(
+        '/health', ExceptionWrappedCaller(w2v_server.handle_request_health))
+    app.router.add_post(
+        '/unk_words',
+        ExceptionWrappedCaller(w2v_server.handle_request_unknown_words))
 
 
 def main():
@@ -143,12 +155,11 @@ def main():
         logging_config['handlers']['elastic']['log_tag'] = log_tag
     logging.config.dictConfig(logging_config)
 
-    loop = asyncio.get_event_loop()
     config = SvcConfig.get_instance()
     server = Word2VecServer()
     server.load(config.vectors_file)
 
-    app = web.Application(loop=loop)
+    app = web.Application()
     initialize_web_app(app, server)
     web.run_app(app, port=config.server_port)
 
