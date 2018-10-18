@@ -7,7 +7,7 @@ class SvcConfig(object):
 
     def __init__(self):
         self._vectors_file = os.environ.get(
-            'W2V_VECTOR_FILE', '/datasets/GoogleNews-vectors-negative300.bin')
+            'W2V_VECTOR_FILE', '/datasets/glove.840B.300d.pkl')
         self._server_port = os.environ.get('W2V_SERVER_PORT', '9090')
 
     @staticmethod
