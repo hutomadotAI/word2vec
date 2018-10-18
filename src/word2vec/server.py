@@ -55,6 +55,14 @@ class Word2VecServer:
         tmp /= numpy.linalg.norm(tmp) / self.__mean
         return tmp
 
+    async def handle_reload(self, request):
+        data = await request.json()
+        if 'path' not in data:
+            raise web.HTTPBadRequest()
+        path = data['path']
+        self.load(path)
+        return web.Response()
+
     async def handle_request_multiple_words(self, request):
         """
         This endpoint handles a request that takes a JSON array of words, and returns
@@ -143,6 +151,9 @@ def initialize_web_app(app, w2v_server):
     app.router.add_post(
         '/unk_words',
         ExceptionWrappedCaller(w2v_server.handle_request_unknown_words))
+    app.router.add_post(
+        '/reload',
+        ExceptionWrappedCaller(w2v_server.handle_reload))
 
 
 def main():
