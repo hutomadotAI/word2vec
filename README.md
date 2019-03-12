@@ -5,7 +5,7 @@ word2vec project
 This is a Python project
 
 # Build and Test
-Use pipenv and pytest
+Use pipenv and pytest, but it should also do internal builds as normal.
 
 # Contribute
 TODO:
