@@ -108,4 +108,4 @@ src/datasets
 
 .pytest_cache/
 .idea/
-src/TEST-*.xml
+TEST*.xml
