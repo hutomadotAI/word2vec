@@ -20,6 +20,8 @@ There are additional endpoints '/health', and '/reload', which will return the s
 To run a local build of this project, you will need:
 - Python 3.7
 - pipenv
+- Docker
+- Docker Compose
 
 First, the data needs to be acquired and transformed into the correct format for the word2vec container to be created.
 
