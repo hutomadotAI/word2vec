@@ -21,9 +21,10 @@ To run a local build of this project, you will need:
 - Docker
 
 First, the data needs to be acquired and transformed into the correct format for the word2vec container to be created. We use pre-trained word vectors, further pickled to speedup the loading process. You can get the pickled files from our Google public bucket, for the following languages:
-English: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/glove.840B.300d.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/glove.840B.300d.pkl)
-Spanish: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.es.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.es.pkl)
-Italian: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.it.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.it.pkl)
+- English: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/glove.840B.300d.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/glove.840B.300d.pkl)
+- Spanish: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.es.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.es.pkl)
+- Italian: [https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.it.pkl](https://storage.googleapis.com/hutoma-datasets/word2vec_service/v2/wiki.it.pkl)
+
 (_Note that you can only use one language per Word2Vec service, but you can have multiple instances of the service, each one supporting a different language_)
 
 Create a folder `src/datasets` and move the .pkl file into it.
